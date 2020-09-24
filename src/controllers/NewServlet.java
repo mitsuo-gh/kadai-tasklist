@@ -1,10 +1,9 @@
 package controllers;
 
 import java.io.IOException;
-import java.util.List;
+import java.sql.Timestamp;
 
 import javax.persistence.EntityManager;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,25 +13,33 @@ import javax.servlet.http.HttpServletResponse;
 import models.Tasks;
 import utils.DBUtil;
 
-@WebServlet("/index")
-public class IndexServlet extends HttpServlet {
+@WebServlet("/new")
+public class NewServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public IndexServlet() {
+    public NewServlet() {
         super();
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = DBUtil.createEntityManager();
+        em.getTransaction().begin();
 
-        List<Tasks> tasks = em.createNamedQuery("getAllTasks", Tasks.class).getResultList();
+        Tasks m = new Tasks();
+
+        String content = "LESSON13 課題提出";
+        m.setContent(content);
+
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        m.setCreate_at(currentTime);
+        m.setUpdate_at(currentTime);
+
+        em.persist(m);
+        em.getTransaction().commit();
+
+        response.getWriter().append(Integer.valueOf(m.getId()).toString());
+
         em.close();
-
-        request.setAttribute("tasks", tasks);
-
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/index.jsp");
-        rd.forward(request, response);
-
     }
 
 }
